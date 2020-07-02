@@ -48,7 +48,7 @@ func main() {
 	// Encrypt w with coin for every public key
 	encMessages, err := encrypt(pubs, w, coins)
 	if err != nil {
-		fmt.Printf("generating random w: %s\n", err.Error())
+		fmt.Printf("encrypt w and coin: %s\n", err.Error())
 		return
 	}
 
@@ -147,7 +147,7 @@ func (c *client) decrypt() ([]byte, error) {
 
 func (c client) verify(coins [][]byte) error {
 	if len(c.allPublicKeys) != len(coins) || len(coins) != len(c.encMessages) {
-		return errors.New("length of public keys and encrypted messages do not match")
+		return errors.New("length of public keys, encrypted messages and coins does not match")
 	}
 
 	for cnt, p := range c.allPublicKeys {
@@ -158,6 +158,9 @@ func (c client) verify(coins [][]byte) error {
 		if !bytes.Equal(enc, c.encMessages[cnt]) {
 			fmt.Println("CHEAT")
 			return errors.New("it appears the server cheated on us")
+			// The server could de-anonymize us by putting a different w for every encrypted message.
+			// By sending back our personalized w, the server knows our public key and hence our identity.
+			// To verify the server did not cheat, check that all encrypted messages contain the same value for w.
 		}
 	}
 	return nil
